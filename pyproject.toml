@@ -1,0 +1,22 @@
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ab-av1-gui"
+version = "1.0.0"
+description = "A Python tkinter GUI for the ab-av1 tool."
+readme = "README.md"
+requires-python = ">=3.8"
+license = {text = "MIT"}
+authors = [
+    {name = "caoli5288", email = "caoli5288@gmail.com"},
+]
+dependencies = [
+    "sv-ttk",
+    "darkdetect",
+    "tkinterdnd2",
+]
+
+[project.gui-scripts]
+ab-av1-gui = "gui:main"

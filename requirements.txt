@@ -1,3 +1,0 @@
-sv-ttk
-darkdetect
-tkinterdnd2

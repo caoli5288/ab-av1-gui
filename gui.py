@@ -8,16 +8,25 @@ from tkinterdnd2 import DND_FILES, TkinterDnD
 import os
 import sys
 import json
+import shutil
 
 class AbAv1Gui(TkinterDnD.Tk):
     def __init__(self):
         super().__init__()
         
         self.title("ab-av1 GUI")
-        self.geometry("800x600")
+
+        # Set size and center the window
+        win_width = 800
+        win_height = 600
+        x = (self.winfo_screenwidth() // 2) - (win_width // 2)
+        y = (self.winfo_screenheight() // 2) - (win_height // 2)
+        self.geometry(f'{win_width}x{win_height}+{x}+{y}')
 
         self.process = None
         self.is_cancelled = False
+        self.log_filename = "gui.log"
+        self.log_file_handle = None
         
         # Check for ab-av1.exe before proceeding
         self.check_ab_av1_executable()
@@ -75,14 +84,14 @@ class AbAv1Gui(TkinterDnD.Tk):
         if os.path.exists("ab-av1"):
             return
         
-        # Check in PATH
-        if os.system("where ab-av1 >nul 2>&1") == 0:
+        # Use shutil.which for an efficient and cross-platform way to find the executable
+        if shutil.which("ab-av1"):
             return
 
         # If not found, show error and exit
         messagebox.showerror(
             "Error",
-            "ab-av1 not found. Please ensure it's in the same directory as gui.py or in your system PATH."
+            "ab-av1 not found. Please ensure it's in the same directory as the script or in your system's PATH."
         )
         sys.exit(1)
 
@@ -321,6 +330,12 @@ class AbAv1Gui(TkinterDnD.Tk):
         self.log_text.delete(1.0, "end")
         self.log_text.config(state="disabled")
         
+        try:
+            self.log_file_handle = open(self.log_filename, "w", encoding="utf-8")
+        except Exception as e:
+            self.log_message(f"Error opening log file: {e}\n")
+            self.log_file_handle = None
+
         self.is_cancelled = False
         self.lock_ui()
         # Run in a separate thread to avoid blocking the GUI
@@ -392,6 +407,10 @@ class AbAv1Gui(TkinterDnD.Tk):
         self.cancel_button.config(state="normal")
 
     def unlock_ui(self):
+        if self.log_file_handle:
+            self.log_file_handle.close()
+            self.log_file_handle = None
+
         self.add_button.config(state="normal")
         self.remove_button.config(state="normal")
         self.clear_button.config(state="normal")
@@ -409,6 +428,11 @@ class AbAv1Gui(TkinterDnD.Tk):
         self.log_text.insert("end", message)
         self.log_text.see("end")
         self.log_text.config(state="disabled")
+        if self.log_file_handle:
+            try:
+                self.log_file_handle.write(message)
+            except Exception as e:
+                print(f"Error writing to log file: {e}")
 
     def show_log_context_menu(self, event):
         try:
@@ -422,6 +446,9 @@ class AbAv1Gui(TkinterDnD.Tk):
         self.log_text.config(state="disabled")
 
 
-if __name__ == "__main__":
+def main():
     app = AbAv1Gui()
     app.mainloop()
+
+if __name__ == "__main__":
+    main()
